@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+  </head>
+  <body>
+    <div class="starter-container">
+      <div class="starter-menu">
+        <h2>خوش آمدید!</h2>
+        <div class="rules">
+          <p>
+            در این بازی از شما یک سوال پرسیده می شود و شما باید با استفاده از
+            کیبورد روی صفحه جواب این سوال را حرف به حرف وارد کنید
+          </p>
+          <p>
+            اگر از قبل جواب سوال را ندانید ، میتوانید سعی کنید که آن را حرف به
+            حرف حدس بزنید
+          </p>
+          <p>
+            اما یادتان باشد که شما فقط به تعداد حروف جواب می توانید حدس اشتباه
+            بزنید
+          </p>
+          <p>
+            و اگر جواب را میدانید میتوانید آن را به یکباره وراد کنید و بسنجید
+          </p>
+          <p>
+            اما بدانید که اگر جواب را یکباره بگویید و اشتباه باشد از بازی حذف
+            شده اید
+          </p>
+        </div>
+        <button type="button" id="start"><span>شروع بازی</span></button>
+      </div>
+    </div>
+
+    <div class="game">
+      <div class="question"></div>
+
+      <div class="answer"></div>
+
+      <div class="keyboard">
+        <div>
+          <div class="key">ض</div>
+          <div class="key">ص</div>
+          <div class="key">ث</div>
+          <div class="key">ق</div>
+          <div class="key">ف</div>
+          <div class="key">غ</div>
+          <div class="key">ع</div>
+          <div class="key">ه</div>
+          <div class="key">خ</div>
+          <div class="key">ح</div>
+          <div class="key">ج</div>
+          <div class="key">چ</div>
+          <div class="key">پ</div>
+        </div>
+        <div>
+          <div class="key">ش</div>
+          <div class="key">س</div>
+          <div class="key">ی</div>
+          <div class="key">ب</div>
+          <div class="key">ل</div>
+          <div class="key">ا</div>
+          <div class="key">ت</div>
+          <div class="key">ن</div>
+          <div class="key">م</div>
+          <div class="key">ک</div>
+          <div class="key">گ</div>
+        </div>
+        <div>
+          <div class="key">ظ</div>
+          <div class="key">ط</div>
+          <div class="key">ز</div>
+          <div class="key">ر</div>
+          <div class="key">ژ</div>
+          <div class="key">ذ</div>
+          <div class="key">د</div>
+          <div class="key">و</div>
+        </div>
+      </div>
+
+      <div>
+        <h2>اشتباهات باقی مانده: <span id="remaining"></span></h2>
+        <h4 id="gameState"></h4>
+        <br />
+        <div id="resetBTN"></div>
+      </div>
+    </div>
+
+    <div id="end">
+      بازی تمام شده
+      <button type="button" id="refreshBTN">
+        بازی دوباره
+      </button>
+    </div>
+
+    <script src="js/jQuery JavaScript Library v3.7.1.js"></script>
+    <script>
+      let questions = [
+        "از نظر ساختار مولکولی، پروتئین یک نوع _______ است",
+        "واحد پول چین _______ است",
+        "پایتخت کشور اندونزی _______ است",
+        "نام علمی انسان امروزی _______ است",
+        "اگر برایند نیروهای وارد بر جسم صفر شود، _______ جسم صفر است",
+      ];
+
+      let answers = ["پلیمر", "یوان", "جاکارتا", "هوموساپینس", "شتاب"];
+
+      const questionDv = $(".question");
+
+      const answerDv = $(".answer");
+
+      const keys = $(".key");
+
+      const remaining = $("#remaining");
+
+      class QandA {
+        constructor() {
+          this.setGame();
+        }
+
+        setGame() {
+          keys.removeClass("correct");
+          keys.removeClass("wrong");
+          answerDv.children().remove();
+          questionDv.text("");
+          $("#resetBTN").css("all", "unset");
+          $("#resetBTN").text("");
+          $("#gameState").text("");
+          $("#remaining").text("")
+
+          if (questions.length > 0) {
+            this.question =
+              questions[Math.floor(Math.random() * questions.length)];
+            this.idx = questions.indexOf(this.question);
+            this.answer = answers[this.idx];
+            this.answerArr = this.answer.split("");
+            this.remainingMistakes = this.answerArr.length;
+
+            questionDv.text(this.question);
+
+            this.answerArr.map((letter) => {
+              const mydv = $(
+                `<div name=${letter}><span>${letter}</span></div>`
+              );
+              answerDv.append(mydv);
+            });
+
+            remaining.text(this.remainingMistakes);
+
+            questions.splice(this.idx, 1);
+            answers.splice(this.idx, 1);
+          }
+        }
+
+        check(letter, key) {
+          if (!($(key).hasClass("wrong") || $(key).hasClass("correct"))) {
+            for (let dv of answerDv.children()) {
+              if ($(dv).attr("name") == letter) {
+                $(dv).children("span").css({ opacity: 1 });
+                $(dv).addClass("correct");
+              }
+            }
+
+            $(key).addClass(
+              this.answerArr.includes(letter) ? "correct" : "wrong"
+            );
+
+            if ($(key).hasClass("wrong")) {
+              this.remainingMistakes -= 1;
+              remaining.text(this.remainingMistakes);
+
+              if (this.remainingMistakes <= 0) this.playerLost();
+
+              return;
+            }
+
+            let win = true;
+            for (let dv of answerDv.children()) {
+              if (!$(dv).hasClass("correct")) {
+                win = false;
+              }
+            }
+
+            if (win) this.playerWon();
+          }
+        }
+
+        playerLost() {
+          this.gameOver();
+          $("#gameState").text("شما باختید!");
+          $("#resetBTN").text("شروع دوباره");
+          $("#resetBTN").click(function () {
+            window.location.reload();
+          });
+        }
+
+        playerWon() {
+          this.gameOver();
+          $("#gameState").text("شما بردید!");
+          $("#resetBTN").text("مرحله بعدی");
+          if (questions.length <= 0) {
+            setTimeout(() => {
+              this.endGame();
+            }, 1000);
+          }
+        }
+
+        gameOver() {
+          $(".key").off("click");
+          $("#resetBTN").css({
+            margin: "10px",
+            padding: "6px 12px",
+            "background-color": "var(--yellow)",
+            "font-size": "large",
+            "text-align": "center",
+            "border-radius": "15px",
+            cursor: "pointer",
+            display: "block",
+          });
+        }
+
+        endGame() {
+          console.log("game ended");
+          $("#end").addClass("ended")
+        }
+      }
+
+      $(document).ready(function () {
+
+        $("#start").click(function(){
+          $(".starter-container").slideUp()
+        })
+
+        const QA = new QandA();
+
+        keys.click(function () {
+          QA.check($(this).text(), $(this));
+        });
+
+        $("#resetBTN").click(function () {
+          QA.setGame();
+          keys.click(function () {
+            QA.check($(this).text(), $(this));
+          });
+        });
+
+        $("#refreshBTN").click(function () {
+            window.location.reload();
+        });
+
+      });
+    </script>
+  </body>
+</html>
